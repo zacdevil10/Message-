@@ -2,12 +2,14 @@ package uk.co.zac_h.message;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.animation.LayoutTransition;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import uk.co.zac_h.message.conversations.ConversationsFragment;
@@ -67,8 +70,10 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.nav_invite:
                         return true;
                     case R.id.nav_settings:
+                        item.setChecked(false);
                         return true;
                     case R.id.nav_blacklist:
+                        item.setChecked(false);
                         return true;
                     case R.id.nav_feedback:
                         item.setChecked(false);
@@ -84,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         return true;
                     case R.id.nav_info:
+                        item.setChecked(false);
                         return true;
                 }
 
@@ -106,6 +112,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
+        final MenuItem search = menu.findItem(R.id.search);
+        SearchView searchView = (SearchView) search.getActionView();
+        LinearLayout searchBar = (LinearLayout) searchView.findViewById(R.id.search_bar);
+        searchBar.setLayoutTransition(new LayoutTransition());
+
         return true;
     }
 
@@ -120,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 
 
 }

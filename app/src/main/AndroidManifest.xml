@@ -3,6 +3,9 @@
     package="uk.co.zac_h.message">
 
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

@@ -26,7 +26,7 @@ public class ConversationsAdapter extends RecyclerView.Adapter<ConversationsAdap
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        
+
     }
 
     @Override
