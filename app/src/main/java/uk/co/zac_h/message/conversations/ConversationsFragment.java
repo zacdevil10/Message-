@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,9 +16,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import uk.co.zac_h.message.R;
 import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsAdapter;
@@ -52,7 +58,7 @@ public class ConversationsFragment extends Fragment {
             number.add(getContactName(getContext(), messageModel.getNumber()));
             body.add(messageModel.getBody());
             type.add(messageModel.getMessageType());
-            timeStamp.add(String.valueOf(convertMessageDate(Long.valueOf(messageModel.getDate()))));
+            timeStamp.add(convertMessageDate(Long.valueOf(messageModel.getDate())));
             System.out.println(messageModel.getNumber() + ", Body: " + messageModel.getBody() + ", Date:" + messageModel.getDate() + ", Read? " + messageModel.getRead() + ", Message Type: " + messageModel.getMessageType());
         }
 
@@ -95,8 +101,35 @@ public class ConversationsFragment extends Fragment {
         return name;
     }
 
-    public Date convertMessageDate(Long dateMilli) {
-        return new Date(dateMilli);
+    String newDate;
+    Date date;
+
+    public String convertMessageDate(Long dateMilli) {
+        long currentTime = System.currentTimeMillis();
+
+        date = new Date(dateMilli);
+        Date currentDate = new Date(currentTime);
+
+        SimpleDateFormat lessThanSevenDays = new SimpleDateFormat("EEE", Locale.UK);
+        SimpleDateFormat moreThanSevenDays = new SimpleDateFormat("MMM dd", Locale.UK);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, 7);
+
+        String stringDate = date.toString();
+
+        if (calendar.getTime().compareTo(currentDate) < 0) {
+            System.out.println("More than 7 days ago: " + date);
+
+            newDate = moreThanSevenDays.format(date);
+            System.out.println("NEW DATE: " + newDate);
+
+        } else {
+            newDate = lessThanSevenDays.format(date);
+        }
+
+        return newDate;
     }
 
 }

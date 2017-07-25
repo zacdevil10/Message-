@@ -7,17 +7,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.TextPaint;
+import android.graphics.Paint.Align;
 
 import uk.co.zac_h.message.R;
 
 public class LetterTitleProvider {
     private static final int NUMBER_OF_COLORS = 8;
     private final TextPaint textPaint = new TextPaint();
-    private final Rect bounds = new Rect();
+    private final Rect mBounds = new Rect();
     private final Canvas mCanvas = new Canvas();
     private final char[] mFirstChar = new char[1];
 
@@ -30,7 +30,7 @@ public class LetterTitleProvider {
 
         textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setTextAlign(Align.CENTER);
         textPaint.setAntiAlias(true);
 
         colors = resources.obtainTypedArray(R.array.letter_tile_colors);
@@ -49,9 +49,10 @@ public class LetterTitleProvider {
         if (isEnglishLetterOrDigit(firstChar)) {
             mFirstChar[0] = Character.toUpperCase(firstChar);
             textPaint.setTextSize(tileLetterSize);
-            textPaint.getTextBounds(mFirstChar, 0, 1, bounds);
-            c.drawText(mFirstChar, 0, 1, 0 + width / 2, 0 + height / 2 + (bounds.bottom = bounds.top) / 2, textPaint);
+            textPaint.getTextBounds(mFirstChar, 0, 1, mBounds);
+            c.drawText(mFirstChar, 0, 1, width / 2, height / 2 + (mBounds.bottom - mBounds.top) / 2, textPaint);
         } else {
+            //TODO: FIX THIS. "IMPORTANT"
             c.drawBitmap(defaultBitmap, 0, 0, null);
         }
 
