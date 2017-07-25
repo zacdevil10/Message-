@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="56dp"
+    android:layout_height="72dp"
     android:id="@+id/item"
     android:clickable="true"
     android:focusable="true"
@@ -19,14 +19,24 @@
         app:border_color="#FF000000" />
 
     <TextView
-        android:id="@+id/sender"
+        android:id="@+id/number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/friend_profile_image"
-        android:layout_toStartOf="@+id/more"
-        android:layout_marginStart="16dp"
-        android:layout_centerVertical="true"
         android:textSize="16sp"
-        android:text="" />
+        android:text=""
+        android:layout_marginStart="72dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textSize="14sp"
+        android:layout_marginEnd="16dp"
+        android:id="@+id/body"
+        android:layout_alignStart="@+id/number"
+        android:layout_below="@+id/number" />
 
 </RelativeLayout>

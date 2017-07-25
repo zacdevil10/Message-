@@ -13,8 +13,14 @@ import uk.co.zac_h.message.R;
 
 public class ConversationsAdapter extends RecyclerView.Adapter<ConversationsAdapter.ViewHolder> {
 
-    public ConversationsAdapter(Context context) {
+    private final Context context;
+    private final ArrayList number;
+    private final ArrayList body;
 
+    public ConversationsAdapter(Context context, ArrayList number, ArrayList body) {
+        this.context = context;
+        this.number = number;
+        this.body = body;
     }
 
     @Override
@@ -26,21 +32,24 @@ public class ConversationsAdapter extends RecyclerView.Adapter<ConversationsAdap
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-
+        holder.number.setText(number.get(position).toString());
+        holder.body.setText(body.get(position).toString());
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return number.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        final TextView sender;
+        final TextView number;
+        final TextView body;
 
         ViewHolder(View itemView) {
             super(itemView);
-            sender = (TextView) itemView.findViewById(R.id.sender);
+            number = (TextView) itemView.findViewById(R.id.number);
+            body = (TextView) itemView.findViewById(R.id.body);
         }
     }
 }

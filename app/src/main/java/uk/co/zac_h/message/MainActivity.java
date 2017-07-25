@@ -1,14 +1,18 @@
 package uk.co.zac_h.message;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.animation.LayoutTransition;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -23,6 +27,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import uk.co.zac_h.message.conversations.ConversationsFragment;
+import uk.co.zac_h.message.database.DatabaseHelper;
+import uk.co.zac_h.message.database.MessageSync;
+import uk.co.zac_h.message.database.ReturnData;
+import uk.co.zac_h.message.database.databaseModel.ProfileModel;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,10 +38,19 @@ public class MainActivity extends AppCompatActivity {
 
     private final ConversationsFragment conversationsFragment = new ConversationsFragment();
 
+    private static final int READ_SMS_PERM_REQUEST = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        System.out.println(new ReturnData().getAll(this));
+
+        //Request permissions
+        getPermissions();
+
+        //Set the action bar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -48,8 +65,9 @@ public class MainActivity extends AppCompatActivity {
         navigationView.getMenu().getItem(0).setChecked(true);
         header = navigationView.getHeaderView(0);
 
+        //Change username in header of navigation view
         TextView usernameHeader = (TextView) header.findViewById(R.id.username);
-        //Ask for username input on first opening of app
+        //TODO: Ask for username input on first opening of app
         usernameHeader.setText("John Smith");
 
         getSupportFragmentManager().beginTransaction().add(R.id.content_frame, conversationsFragment).commit();
@@ -59,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 item.setChecked(true);
                 drawer.closeDrawers();
 
+                //Switch fragments on nav view item selected
                 switch (item.getItemId()) {
                     case R.id.nav_conversations:
                         getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, conversationsFragment).commit();
@@ -96,6 +115,47 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    public void firstRun() {
+        ProfileModel profileModel = new ProfileModel("Zac Hadjineophytou", 0);
+        DatabaseHelper db = new DatabaseHelper(this);
+        db.addProfile(profileModel);
+        db.close();
+        if (new ReturnData().firstRun(this) == 0) {
+            new MessageSync(this);
+            new ReturnData().setFirstRun(this);
+        } else {
+            System.out.println("Already done first run!");
+        }
+    }
+
+    public void getPermissions() {
+        //Make sure we don't have permissions yet
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_SMS)) {
+
+                }
+                //If we don't have permission, request permissions
+                requestPermissions(new String[]{Manifest.permission.READ_SMS}, READ_SMS_PERM_REQUEST);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == READ_SMS_PERM_REQUEST) {
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //If we are given permission, get messages and refresh inbox
+                //Run first run setup
+                firstRun();
+            } else {
+                //We don't have permission and therefore the app will not load for the user
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     @Override
