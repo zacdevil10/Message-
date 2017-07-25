@@ -4,6 +4,7 @@ import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.animation.LayoutTransition;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -36,19 +37,23 @@ public class MainActivity extends AppCompatActivity {
 
     private View header;
 
+    private ProgressDialog progressDialog;
+
     private final ConversationsFragment conversationsFragment = new ConversationsFragment();
 
     private static final int READ_SMS_PERM_REQUEST = 1;
+    private static final int READ_CONTACTS_PERM_REQUEST = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        System.out.println(new ReturnData().getAll(this));
+        //System.out.println(new ReturnData().getAll(this));
 
         //Request permissions
-        getPermissions();
+        getSmsPermissions();
+        getContactPerms();
 
         //Set the action bar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -115,6 +120,10 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        progressDialog = new ProgressDialog(this, R.style.LoadingTheme);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Loading messages...");
     }
 
     public void firstRun() {
@@ -123,14 +132,14 @@ public class MainActivity extends AppCompatActivity {
         db.addProfile(profileModel);
         db.close();
         if (new ReturnData().firstRun(this) == 0) {
-            new MessageSync(this);
+            new MessageSync(this, progressDialog).execute();
             new ReturnData().setFirstRun(this);
         } else {
             System.out.println("Already done first run!");
         }
     }
 
-    public void getPermissions() {
+    public void getSmsPermissions() {
         //Make sure we don't have permissions yet
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -143,18 +152,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void getContactPerms() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
+
+                }
+                //If we don't have permission, request permissions
+                requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, READ_CONTACTS_PERM_REQUEST);
+            }
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == READ_SMS_PERM_REQUEST) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                //If we are given permission, get messages and refresh inbox
-                //Run first run setup
-                firstRun();
-            } else {
-                //We don't have permission and therefore the app will not load for the user
-            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case READ_SMS_PERM_REQUEST:
+                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //If we are given permission, get messages and refresh inbox
+                    //Run first run setup
+                    //firstRun();
+                }
+                return;
+            case READ_CONTACTS_PERM_REQUEST:
+                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //If we are given permission, get messages and refresh inbox
+                    //Run first run setup
+                    firstRun();
+                }
         }
     }
 

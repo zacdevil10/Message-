@@ -25,7 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         db.beginTransaction();
         try {
-            db.execSQL("CREATE TABLE IF NOT EXISTS SMS_MESSAGES(number TEXT, body TEXT, date INTEGER, read INTEGER DEFAULT 0)");
+            db.execSQL("CREATE TABLE IF NOT EXISTS SMS_MESSAGES(number TEXT, body TEXT, date TEXT, read TEXT, message_type TEXT)");
             db.execSQL("CREATE TABLE IF NOT EXISTS PROFILE(name TEXT, firstRun INTEGER DEFAULT 0)");
             db.setTransactionSuccessful();
         } finally {
@@ -52,6 +52,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.put("body", messageModel.getBody());
         values.put("date", messageModel.getDate());
         values.put("read", messageModel.getRead());
+        values.put("message_type", messageModel.getMessageType());
 
         db.insert("SMS_MESSAGES", null, values);
     }
@@ -79,8 +80,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                 MessageModel messageModel = new MessageModel();
                 messageModel.setNumber(cursor.getString(cursor.getColumnIndex("number")));
                 messageModel.setBody(cursor.getString(cursor.getColumnIndex("body")));
-                messageModel.setDate(cursor.getInt(cursor.getColumnIndex("date")));
-                messageModel.setRead(cursor.getInt(cursor.getColumnIndex("read")));
+                messageModel.setDate(cursor.getString(cursor.getColumnIndex("date")));
+                messageModel.setRead(cursor.getString(cursor.getColumnIndex("read")));
+                messageModel.setMessageType(cursor.getString(cursor.getColumnIndex("message_type")));
                 messageModelList.add(messageModel);
             } while (cursor.moveToNext());
         }
@@ -102,8 +104,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                 MessageModel messageModel = new MessageModel();
                 messageModel.setNumber(cursor.getString(cursor.getColumnIndex("number")));
                 messageModel.setBody(cursor.getString(cursor.getColumnIndex("body")));
-                messageModel.setDate(cursor.getInt(cursor.getColumnIndex("date")));
-                messageModel.setRead(cursor.getInt(cursor.getColumnIndex("read")));
+                messageModel.setDate(cursor.getString(cursor.getColumnIndex("date")));
+                messageModel.setRead(cursor.getString(cursor.getColumnIndex("read")));
+                messageModel.setMessageType(cursor.getString(cursor.getColumnIndex("message_type")));
                 messageModelList.add(messageModel);
             } while (cursor.moveToNext());
         }
@@ -124,7 +127,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             do {
                 MessageModel messageModel = new MessageModel();
                 messageModel.setBody(cursor.getString(cursor.getColumnIndex("body")));
-                messageModel.setDate(cursor.getInt(cursor.getColumnIndex("date")));
+                messageModel.setDate(cursor.getString(cursor.getColumnIndex("date")));
                 messageModelList.add(messageModel);
             } while (cursor.moveToNext());
         }

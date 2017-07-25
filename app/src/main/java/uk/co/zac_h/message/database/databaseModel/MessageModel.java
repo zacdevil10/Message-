@@ -4,16 +4,18 @@ public class MessageModel {
 
     private String number;
     private String body;
-    private Integer date;
-    private Integer read;
+    private String date;
+    private String read;
+    private String messageType;
 
     public MessageModel() {}
 
-    public MessageModel(String number, String body, Integer date, Integer read) {
+    public MessageModel(String number, String body, String date, String read, String messageType) {
         this.number = number != null? number : this.number;
         this.body = body != null? body : this.body;
         this.date = date != null? date : this.date;
         this.read = read != null? read : this.read;
+        this.messageType = messageType != null? messageType : this.messageType;
     }
 
     public String getNumber() {
@@ -24,12 +26,16 @@ public class MessageModel {
         return body;
     }
 
-    public Integer getDate() {
+    public String getDate() {
         return date;
     }
 
-    public Integer getRead() {
+    public String getRead() {
         return read;
+    }
+
+    public String getMessageType() {
+        return messageType;
     }
 
     public void setNumber(String number) {
@@ -40,11 +46,15 @@ public class MessageModel {
         this.body = body;
     }
 
-    public void setDate(Integer date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
-    public void setRead(Integer read) {
+    public void setRead(String read) {
         this.read = read;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
     }
 }
