@@ -26,7 +26,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.beginTransaction();
         try {
             db.execSQL("CREATE TABLE IF NOT EXISTS SMS_MESSAGES(number TEXT, body TEXT, date TEXT, read TEXT, message_type TEXT)");
-            db.execSQL("CREATE TABLE IF NOT EXISTS PROFILE(name TEXT, firstRun INTEGER DEFAULT 0)");
+            db.execSQL("CREATE TABLE IF NOT EXISTS PROFILE(name TEXT DEFAULT 'Unknown', firstRun INTEGER DEFAULT 0)");
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -165,5 +165,26 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     void setFirstRun() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("UPDATE PROFILE SET firstRun='1'");
+    }
+
+    //Get count of profile table
+    Integer isProfileEmpty() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM PROFILE", null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+
+            int count = cursor.getInt(0);
+
+            if (count > 0) {
+                return 1;
+            }
+
+            cursor.close();
+        }
+
+        return 0;
     }
 }

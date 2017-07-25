@@ -7,6 +7,7 @@ import android.animation.LayoutTransition;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.MessageSync;
 import uk.co.zac_h.message.database.ReturnData;
 import uk.co.zac_h.message.database.databaseModel.ProfileModel;
+import uk.co.zac_h.message.firstRun.FirstRun;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,9 +51,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //System.out.println(new ReturnData().getAll(this));
+        //First run, open intro
+        //firstRun();
 
-        //Request permissions
         getSmsPermissions();
         getContactPerms();
 
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         //Change username in header of navigation view
         TextView usernameHeader = (TextView) header.findViewById(R.id.username);
         //TODO: Ask for username input on first opening of app
-        usernameHeader.setText("John Smith");
+        usernameHeader.setText("Unknown");
 
         getSupportFragmentManager().beginTransaction().add(R.id.content_frame, conversationsFragment).commit();
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -127,11 +129,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void firstRun() {
-        ProfileModel profileModel = new ProfileModel("Zac Hadjineophytou", 0);
-        DatabaseHelper db = new DatabaseHelper(this);
-        db.addProfile(profileModel);
-        db.close();
-        if (new ReturnData().firstRun(this) == 0) {
+        if (new ReturnData().isProfileEmpty(this) == 0 || new ReturnData().firstRun(this) == 0) {
+            //Intent intent = new Intent(this, FirstRun.class);
+            //startActivity(intent);
             new MessageSync(this, progressDialog).execute();
             new ReturnData().setFirstRun(this);
         } else {

@@ -3,6 +3,7 @@ package uk.co.zac_h.message.conversations;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import uk.co.zac_h.message.R;
@@ -22,6 +24,7 @@ import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsAdapt
 import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
 import uk.co.zac_h.message.database.databaseModel.ProfileModel;
+import uk.co.zac_h.message.photos.LetterTitleProvider;
 
 public class ConversationsFragment extends Fragment {
 
@@ -49,7 +52,7 @@ public class ConversationsFragment extends Fragment {
             number.add(getContactName(getContext(), messageModel.getNumber()));
             body.add(messageModel.getBody());
             type.add(messageModel.getMessageType());
-            timeStamp.add(messageModel.getDate());
+            timeStamp.add(String.valueOf(convertMessageDate(Long.valueOf(messageModel.getDate()))));
             System.out.println(messageModel.getNumber() + ", Body: " + messageModel.getBody() + ", Date:" + messageModel.getDate() + ", Read? " + messageModel.getRead() + ", Message Type: " + messageModel.getMessageType());
         }
 
@@ -90,6 +93,10 @@ public class ConversationsFragment extends Fragment {
         cursor.close();
 
         return name;
+    }
+
+    public Date convertMessageDate(Long dateMilli) {
+        return new Date(dateMilli);
     }
 
 }

@@ -43,4 +43,14 @@ public class ReturnData {
         db.setFirstRun();
         db.close();
     }
+
+    public Integer isProfileEmpty(Context context) {
+        db = new DatabaseHelper(context);
+
+        Integer status = db.isProfileEmpty();
+
+        db.close();
+
+        return status;
+    }
 }
