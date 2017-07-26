@@ -117,17 +117,19 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     //Get all messages for a selected number
-    public List<MessageModel> getMessagesForID(String number) {
+    public List<MessageModel> getMessagesForNumber(String number) {
         List<MessageModel> messageModelList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES WHERE number='" + number + "'", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES WHERE number='" + number + "'" + "ORDER BY date ASC", null);
 
         if (cursor.moveToFirst()) {
             do {
                 MessageModel messageModel = new MessageModel();
                 messageModel.setBody(cursor.getString(cursor.getColumnIndex("body")));
                 messageModel.setDate(cursor.getString(cursor.getColumnIndex("date")));
+                messageModel.setRead(cursor.getString(cursor.getColumnIndex("read")));
+                messageModel.setMessageType(cursor.getString(cursor.getColumnIndex("message_type")));
                 messageModelList.add(messageModel);
             } while (cursor.moveToNext());
         }

@@ -10,8 +10,6 @@ import uk.co.zac_h.message.database.databaseModel.MessageModel;
 
 public class MessageSync extends AsyncTask<Void, Void, Void> {
 
-    private DatabaseHelper db;
-
     private final Context context;
     private final ProgressDialog progressDialog;
 
@@ -29,7 +27,7 @@ public class MessageSync extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         Uri uri = Uri.parse("content://sms");
-        db = new DatabaseHelper(context);
+        DatabaseHelper db = new DatabaseHelper(context);
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
 
         int indexAddress = 0;

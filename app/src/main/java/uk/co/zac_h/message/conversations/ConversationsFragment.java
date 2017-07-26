@@ -1,14 +1,11 @@
 package uk.co.zac_h.message.conversations;
 
-import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,8 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,14 +24,11 @@ import uk.co.zac_h.message.R;
 import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsAdapter;
 import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
-import uk.co.zac_h.message.database.databaseModel.ProfileModel;
-import uk.co.zac_h.message.photos.LetterTitleProvider;
 
 public class ConversationsFragment extends Fragment {
 
-    private DatabaseHelper db;
-
     private final ArrayList<String> number = new ArrayList<>();
+    private final ArrayList<String> nameFinal = new ArrayList<>();
     private final ArrayList<String> body = new ArrayList<>();
     private final ArrayList<String> type = new ArrayList<>();
     private final ArrayList<String> timeStamp = new ArrayList<>();
@@ -52,36 +44,32 @@ public class ConversationsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_conversations, container, false);
 
-        db = new DatabaseHelper(getActivity());
+        DatabaseHelper db = new DatabaseHelper(getActivity());
         List<MessageModel> messageModels = db.getLatestMessages();
         for (MessageModel messageModel: messageModels) {
-            number.add(getContactName(getContext(), messageModel.getNumber()));
+            number.add(messageModel.getNumber());
+            nameFinal.add(getContactName(getContext(), messageModel.getNumber()));
             body.add(messageModel.getBody());
             type.add(messageModel.getMessageType());
             timeStamp.add(convertMessageDate(Long.valueOf(messageModel.getDate())));
-            System.out.println(messageModel.getNumber() + ", Body: " + messageModel.getBody() + ", Date:" + messageModel.getDate() + ", Read? " + messageModel.getRead() + ", Message Type: " + messageModel.getMessageType());
         }
 
         final RecyclerView latestMessagesList = (RecyclerView) view.findViewById(R.id.latestMessagesList);
         latestMessagesList.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         latestMessagesList.setLayoutManager(layoutManager);
-        final ConversationsAdapter conversationsAdapter = new ConversationsAdapter(getActivity(), number, body, type, timeStamp);
+        final ConversationsAdapter conversationsAdapter = new ConversationsAdapter(getActivity(), number, nameFinal, body, type, timeStamp);
 
         latestMessagesList.setAdapter(conversationsAdapter);
 
         return view;
     }
 
-    public void requestMessages() {
-
-    }
-
-    private String name;
-
     public String getContactName(Context context, String number) {
         ContentResolver contentResolver = context.getContentResolver();
-        number = "0" + number;
+        if (!number.contains("[a-zA-Z]+") && number.length() == 10) {
+            number = "0" + number;
+        }
         Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
         Cursor cursor = contentResolver.query(uri, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
 
@@ -89,11 +77,10 @@ public class ConversationsFragment extends Fragment {
             return null;
         }
 
-        name = number;
+        String name = number;
 
         if (cursor.moveToFirst()) {
             name = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
-            //name = number;
         }
 
         cursor.close();
@@ -117,14 +104,8 @@ public class ConversationsFragment extends Fragment {
         calendar.setTime(date);
         calendar.add(Calendar.DATE, 7);
 
-        String stringDate = date.toString();
-
         if (calendar.getTime().compareTo(currentDate) < 0) {
-            System.out.println("More than 7 days ago: " + date);
-
             newDate = moreThanSevenDays.format(date);
-            System.out.println("NEW DATE: " + newDate);
-
         } else {
             newDate = lessThanSevenDays.format(date);
         }

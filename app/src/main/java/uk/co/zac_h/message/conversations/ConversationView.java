@@ -1,0 +1,118 @@
+package uk.co.zac_h.message.conversations;
+
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import uk.co.zac_h.message.R;
+import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsViewAdapter;
+import uk.co.zac_h.message.database.DatabaseHelper;
+import uk.co.zac_h.message.database.databaseModel.MessageModel;
+
+public class ConversationView extends AppCompatActivity {
+
+    String name;
+    String number;
+
+    private final ArrayList<String> body = new ArrayList<>();
+    private final ArrayList<String> read = new ArrayList<>();
+    private final ArrayList<String> messageType = new ArrayList<>();
+    private final ArrayList<String> timeStamp = new ArrayList<>();
+
+    private static final int NUMBER_OF_COLORS = 8;
+    private TypedArray colors;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_conversation_view);
+
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            name = bundle.getString("name");
+            number = bundle.getString("number");
+        }
+
+        System.out.println(number);
+
+        final Resources resources = getResources();
+        colors = resources.obtainTypedArray(R.array.letter_tile_colors);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(name);
+        toolbar.setBackgroundColor(pickColor(name));
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        DatabaseHelper db = new DatabaseHelper(this);
+        List<MessageModel> messageModels = db.getMessagesForNumber(number);
+        for (MessageModel messageModel: messageModels) {
+            body.add(messageModel.getBody());
+            read.add(messageModel.getRead());
+            messageType.add(messageModel.getMessageType());
+            timeStamp.add(convertMessageDate(Long.valueOf(messageModel.getDate())));
+        }
+
+        final RecyclerView conversationsList = (RecyclerView) findViewById(R.id.conversationRecycler);
+        conversationsList.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        conversationsList.setLayoutManager(layoutManager);
+        final ConversationsViewAdapter conversationsViewAdapter = new ConversationsViewAdapter(this, body, timeStamp, read, messageType);
+
+        conversationsList.setAdapter(conversationsViewAdapter);
+    }
+
+    private int pickColor(String key) {
+        final int color = Math.abs(key.hashCode()) % NUMBER_OF_COLORS;
+        try {
+            return colors.getColor(color, Color.BLACK);
+        } finally {
+            colors.recycle();
+        }
+    }
+
+    String newDate;
+    Date date;
+
+    //TODO: Put this in a class
+    public String convertMessageDate(Long dateMilli) {
+        long currentTime = System.currentTimeMillis();
+
+        date = new Date(dateMilli);
+        Date currentDate = new Date(currentTime);
+
+        SimpleDateFormat lessThanSevenDays = new SimpleDateFormat("EEE", Locale.UK);
+        SimpleDateFormat moreThanSevenDays = new SimpleDateFormat("MMM dd", Locale.UK);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, 7);
+
+        if (calendar.getTime().compareTo(currentDate) < 0) {
+            System.out.println("More than 7 days ago: " + date);
+
+            newDate = moreThanSevenDays.format(date);
+            System.out.println("NEW DATE: " + newDate);
+
+        } else {
+            newDate = lessThanSevenDays.format(date);
+        }
+
+        return newDate;
+    }
+}
