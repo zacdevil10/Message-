@@ -50,10 +50,11 @@ public class ConversationView extends AppCompatActivity {
 
         final Resources resources = getResources();
         colors = resources.obtainTypedArray(R.array.letter_tile_colors);
+        int color = pickColor(name);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(name);
-        toolbar.setBackgroundColor(pickColor(name));
+        toolbar.setBackgroundColor(color);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -72,7 +73,7 @@ public class ConversationView extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         conversationsList.setLayoutManager(layoutManager);
-        final ConversationsViewAdapter conversationsViewAdapter = new ConversationsViewAdapter(this, body, timeStamp, read, messageType);
+        final ConversationsViewAdapter conversationsViewAdapter = new ConversationsViewAdapter(this, body, timeStamp, read, messageType, color);
 
         conversationsList.setAdapter(conversationsViewAdapter);
     }
@@ -104,11 +105,7 @@ public class ConversationView extends AppCompatActivity {
         calendar.add(Calendar.DATE, 7);
 
         if (calendar.getTime().compareTo(currentDate) < 0) {
-            System.out.println("More than 7 days ago: " + date);
-
             newDate = moreThanSevenDays.format(date);
-            System.out.println("NEW DATE: " + newDate);
-
         } else {
             newDate = lessThanSevenDays.format(date);
         }

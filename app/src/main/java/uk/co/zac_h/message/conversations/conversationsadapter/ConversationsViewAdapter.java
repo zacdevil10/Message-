@@ -18,19 +18,22 @@ public class ConversationsViewAdapter extends RecyclerView.Adapter<Conversations
     private final ArrayList date;
     private final ArrayList read;
     private final ArrayList messageType;
+    private final int color;
 
-    public ConversationsViewAdapter(Context context, ArrayList body, ArrayList date, ArrayList read, ArrayList messageType) {
+    public ConversationsViewAdapter(Context context, ArrayList body, ArrayList date, ArrayList read, ArrayList messageType, int color) {
         this.context = context;
         this.body = body;
         this.date = date;
         this.read = read;
         this.messageType = messageType;
+        this.color = color;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == 1) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_left, parent, false);
+            view.findViewById(R.id.message_content).setBackgroundColor(color);
             return new ViewHolder(view);
         } else {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_right, parent, false);
@@ -41,8 +44,6 @@ public class ConversationsViewAdapter extends RecyclerView.Adapter<Conversations
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
         holder.contentView.setText(body.get(position).toString());
-
-        System.out.println("Message Type: " + messageType.get(position).toString());
     }
 
     @Override
