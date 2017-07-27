@@ -97,7 +97,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         List<MessageModel> messageModelList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES t1 WHERE t1.date = (SELECT MAX(t2.date) FROM SMS_MESSAGES t2 WHERE t2.number=t1.number)", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES t1 WHERE t1.date = (SELECT MAX(t2.date) FROM SMS_MESSAGES t2 WHERE t2.number=t1.number) ORDER BY date DESC", null);
 
         if (cursor.moveToFirst()) {
             do {

@@ -33,7 +33,7 @@ public class ConversationsViewAdapter extends RecyclerView.Adapter<Conversations
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == 1) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_left, parent, false);
-            view.findViewById(R.id.message_content).setBackgroundColor(color);
+            view.findViewById(R.id.parent).setBackgroundColor(color);
             return new ViewHolder(view);
         } else {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_right, parent, false);

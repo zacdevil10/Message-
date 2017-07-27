@@ -14,8 +14,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -123,20 +126,43 @@ public class ConversationView extends AppCompatActivity {
 
                 System.out.println(convertMessageDate(System.currentTimeMillis()));
 
-                MessageModel messageModel = new MessageModel("7803293099", bodyString, timeString, "1", "2");
-                db.addMessages(messageModel);
+                if (!bodyString.equals("")) {
+                    MessageModel messageModel = new MessageModel("7803293099", bodyString, timeString, "1", "2");
+                    db.addMessages(messageModel);
 
-                smsManager.sendTextMessage("0" + number, null, bodyString, null, null);
+                    smsManager.sendTextMessage("0" + number, null, bodyString, null, null);
 
-                body.add(bodyString);
-                read.add("1");
-                messageType.add("2");
-                timeStamp.add(timeString);
+                    body.add(bodyString);
+                    read.add("1");
+                    messageType.add("2");
+                    timeStamp.add(timeString);
 
-                conversationsViewAdapter.notifyDataSetChanged();
-                conversationsList.scrollToPosition(body.size() - 1);
+                    conversationsViewAdapter.notifyDataSetChanged();
+                    conversationsList.scrollToPosition(body.size() - 1);
 
-                ((EditText) findViewById(R.id.editText)).setText("");
+                    ((EditText) findViewById(R.id.editText)).setText("");
+                }
+            }
+        });
+
+        ((EditText) findViewById(R.id.editText)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() != 0) {
+                    ((ImageView) findViewById(R.id.send)).setImageResource(R.drawable.ic_send_purple_24dp);
+                } else {
+                    ((ImageView) findViewById(R.id.send)).setImageResource(R.drawable.ic_send_black_24dp);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
         });
     }

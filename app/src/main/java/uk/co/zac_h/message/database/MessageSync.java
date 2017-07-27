@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.telephony.PhoneNumberUtils;
 
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
 
