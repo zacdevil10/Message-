@@ -13,6 +13,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.telephony.SmsManager;
+import android.view.View;
+import android.widget.EditText;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,6 +34,8 @@ public class ConversationView extends AppCompatActivity {
     String name;
     String number;
 
+    DatabaseHelper db;
+
     BroadcastReceiver getNewSMS;
 
     private final ArrayList<String> body = new ArrayList<>();
@@ -40,6 +45,8 @@ public class ConversationView extends AppCompatActivity {
 
     private static final int NUMBER_OF_COLORS = 8;
     private TypedArray colors;
+
+    private SmsManager smsManager;
 
     private ConversationsViewAdapter conversationsViewAdapter;
     private RecyclerView conversationsList;
@@ -56,8 +63,6 @@ public class ConversationView extends AppCompatActivity {
             number = bundle.getString("number");
         }
 
-        System.out.println(number);
-
         final Resources resources = getResources();
         colors = resources.obtainTypedArray(R.array.letter_tile_colors);
         int color = pickColor(name);
@@ -69,7 +74,9 @@ public class ConversationView extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        DatabaseHelper db = new DatabaseHelper(this);
+        smsManager = SmsManager.getDefault();
+
+        db = new DatabaseHelper(this);
         List<MessageModel> messageModels = db.getMessagesForNumber(number);
         for (MessageModel messageModel: messageModels) {
             body.add(messageModel.getBody());
@@ -106,6 +113,32 @@ public class ConversationView extends AppCompatActivity {
         };
 
         LocalBroadcastManager.getInstance(this).registerReceiver(getNewSMS, new IntentFilter("sms.received"));
+
+        findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String bodyString = ((EditText) findViewById(R.id.editText)).getText().toString();
+                String timeString = String.valueOf(System.currentTimeMillis());
+
+                System.out.println(convertMessageDate(System.currentTimeMillis()));
+
+                MessageModel messageModel = new MessageModel("7803293099", bodyString, timeString, "1", "2");
+                db.addMessages(messageModel);
+
+                smsManager.sendTextMessage("0" + number, null, bodyString, null, null);
+
+                body.add(bodyString);
+                read.add("1");
+                messageType.add("2");
+                timeStamp.add(timeString);
+
+                conversationsViewAdapter.notifyDataSetChanged();
+                conversationsList.scrollToPosition(body.size() - 1);
+
+                ((EditText) findViewById(R.id.editText)).setText("");
+            }
+        });
     }
 
     private int pickColor(String key) {

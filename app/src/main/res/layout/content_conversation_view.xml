@@ -45,12 +45,12 @@
             app:layout_constraintLeft_toRightOf="@+id/imageView2"
             app:layout_constraintTop_toTopOf="@+id/sendMessage"
             app:layout_constraintVertical_bias="0.517"
-            app:layout_constraintRight_toLeftOf="@+id/imageView5"
+            app:layout_constraintRight_toLeftOf="@+id/send"
             android:layout_marginRight="8dp"
             android:hint="Type something..." />
 
         <ImageView
-            android:id="@+id/imageView5"
+            android:id="@+id/send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:srcCompat="@drawable/ic_send_black_24dp"
