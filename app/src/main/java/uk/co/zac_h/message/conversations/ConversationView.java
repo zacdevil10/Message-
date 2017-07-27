@@ -1,9 +1,14 @@
 package uk.co.zac_h.message.conversations;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,6 +31,8 @@ public class ConversationView extends AppCompatActivity {
     String name;
     String number;
 
+    BroadcastReceiver getNewSMS;
+
     private final ArrayList<String> body = new ArrayList<>();
     private final ArrayList<String> read = new ArrayList<>();
     private final ArrayList<String> messageType = new ArrayList<>();
@@ -33,6 +40,9 @@ public class ConversationView extends AppCompatActivity {
 
     private static final int NUMBER_OF_COLORS = 8;
     private TypedArray colors;
+
+    private ConversationsViewAdapter conversationsViewAdapter;
+    private RecyclerView conversationsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +78,34 @@ public class ConversationView extends AppCompatActivity {
             timeStamp.add(convertMessageDate(Long.valueOf(messageModel.getDate())));
         }
 
-        final RecyclerView conversationsList = (RecyclerView) findViewById(R.id.conversationRecycler);
+        conversationsList = (RecyclerView) findViewById(R.id.conversationRecycler);
         conversationsList.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         conversationsList.setLayoutManager(layoutManager);
-        final ConversationsViewAdapter conversationsViewAdapter = new ConversationsViewAdapter(this, body, timeStamp, read, messageType, color);
+        conversationsViewAdapter = new ConversationsViewAdapter(this, body, timeStamp, read, messageType, color);
 
         conversationsList.setAdapter(conversationsViewAdapter);
+
+        getNewSMS = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String bodyString = intent.getStringExtra("body");
+                String timeStampString = intent.getStringExtra("timeStamp");
+                String readString = intent.getStringExtra("read");
+                String typeString = intent.getStringExtra("messageType");
+
+                body.add(bodyString);
+                read.add(readString);
+                messageType.add(typeString);
+                timeStamp.add(timeStampString);
+
+                conversationsViewAdapter.notifyDataSetChanged();
+                conversationsList.scrollToPosition(body.size() - 1);
+            }
+        };
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(getNewSMS, new IntentFilter("sms.received"));
     }
 
     private int pickColor(String key) {
