@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 
 import uk.co.zac_h.message.common.utils.Contact;
+import uk.co.zac_h.message.common.utils.Time;
 import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsAdapter;
 import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
@@ -49,7 +50,7 @@ public class SyncLatestMessages extends AsyncTask<Void, Void, Void> {
             body.add(messageModel.getBody());
             read.add(messageModel.getRead());
             type.add(messageModel.getMessageType());
-            timeStamp.add(convertMessageDate(Long.valueOf(messageModel.getDate())));
+            timeStamp.add(new Time().convertMessageDate(Long.valueOf(messageModel.getDate())));
         }
 
         return null;
@@ -59,28 +60,5 @@ public class SyncLatestMessages extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         ConversationsAdapter conversationsAdapter = new ConversationsAdapter(context, id, number, name, body, read, type, timeStamp);
         latestMessagesList.setAdapter(conversationsAdapter);
-    }
-
-    private String convertMessageDate(Long dateMilli) {
-        long currentTime = System.currentTimeMillis();
-
-        Date date = new Date(dateMilli);
-        Date currentDate = new Date(currentTime);
-
-        SimpleDateFormat lessThanSevenDays = new SimpleDateFormat("EEE", Locale.UK);
-        SimpleDateFormat moreThanSevenDays = new SimpleDateFormat("MMM dd", Locale.UK);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(Calendar.DATE, 7);
-
-        String newDate;
-        if (calendar.getTime().compareTo(currentDate) < 0) {
-            newDate = moreThanSevenDays.format(date);
-        } else {
-            newDate = lessThanSevenDays.format(date);
-        }
-
-        return newDate;
     }
 }

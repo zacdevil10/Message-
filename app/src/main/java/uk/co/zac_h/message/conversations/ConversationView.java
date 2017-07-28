@@ -31,6 +31,7 @@ import java.util.Locale;
 import uk.co.zac_h.message.MainActivity;
 import uk.co.zac_h.message.R;
 import uk.co.zac_h.message.common.utils.Contact;
+import uk.co.zac_h.message.common.utils.Time;
 import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsViewAdapter;
 import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
@@ -49,6 +50,7 @@ public class ConversationView extends AppCompatActivity {
     private final ArrayList<String> read = new ArrayList<>();
     private final ArrayList<String> messageType = new ArrayList<>();
     private final ArrayList<String> timeStamp = new ArrayList<>();
+    private final ArrayList<Boolean> animation = new ArrayList<>();
 
     private static final int NUMBER_OF_COLORS = 8;
     private TypedArray colors;
@@ -90,15 +92,17 @@ public class ConversationView extends AppCompatActivity {
             body.add(messageModel.getBody());
             read.add(messageModel.getRead());
             messageType.add(messageModel.getMessageType());
-            timeStamp.add(convertMessageDate(Long.valueOf(messageModel.getDate())));
+            timeStamp.add(new Time().convertMessageDate(Long.valueOf(messageModel.getDate())));
+            animation.add(false);
         }
+        db.close();
 
         conversationsList = (RecyclerView) findViewById(R.id.conversationRecycler);
         conversationsList.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         conversationsList.setLayoutManager(layoutManager);
-        conversationsViewAdapter = new ConversationsViewAdapter(this, body, timeStamp, read, messageType, color);
+        conversationsViewAdapter = new ConversationsViewAdapter(this, body, timeStamp, read, messageType, color, animation);
 
         conversationsList.setAdapter(conversationsViewAdapter);
 
@@ -114,6 +118,7 @@ public class ConversationView extends AppCompatActivity {
                 read.add(readString);
                 messageType.add(typeString);
                 timeStamp.add(timeStampString);
+                animation.add(true);
 
                 conversationsViewAdapter.notifyDataSetChanged();
                 conversationsList.scrollToPosition(body.size() - 1);
@@ -127,11 +132,10 @@ public class ConversationView extends AppCompatActivity {
             public void onClick(View v) {
 
                 String bodyString = ((EditText) findViewById(R.id.editText)).getText().toString();
-                String timeString = String.valueOf(System.currentTimeMillis());
-
-                System.out.println(convertMessageDate(System.currentTimeMillis()));
+                String timeString = String.valueOf(System.currentTimeMillis() - 3000);
 
                 if (!bodyString.equals("")) {
+                    Intent updateLatestView = new Intent("sms.latest");
                     //TODO: CHANGE THIS!
                     String id;
 
@@ -150,11 +154,14 @@ public class ConversationView extends AppCompatActivity {
                     read.add("1");
                     messageType.add("2");
                     timeStamp.add(timeString);
+                    animation.add(true);
 
                     conversationsViewAdapter.notifyDataSetChanged();
                     conversationsList.scrollToPosition(body.size() - 1);
 
                     ((EditText) findViewById(R.id.editText)).setText("");
+
+                    LocalBroadcastManager.getInstance(ConversationView.this).sendBroadcast(new Intent(updateLatestView));
                 }
             }
         });
@@ -190,29 +197,4 @@ public class ConversationView extends AppCompatActivity {
         }
     }
 
-    String newDate;
-    Date date;
-
-    //TODO: Put this in a class
-    public String convertMessageDate(Long dateMilli) {
-        long currentTime = System.currentTimeMillis();
-
-        date = new Date(dateMilli);
-        Date currentDate = new Date(currentTime);
-
-        SimpleDateFormat lessThanSevenDays = new SimpleDateFormat("EEE", Locale.UK);
-        SimpleDateFormat moreThanSevenDays = new SimpleDateFormat("MMM dd", Locale.UK);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(Calendar.DATE, 7);
-
-        if (calendar.getTime().compareTo(currentDate) < 0) {
-            newDate = moreThanSevenDays.format(date);
-        } else {
-            newDate = lessThanSevenDays.format(date);
-        }
-
-        return newDate;
-    }
 }

@@ -51,6 +51,8 @@ public class SmsListener extends BroadcastReceiver {
                         MessageModel messageModel = new MessageModel(id, smsMessages[i].getOriginatingAddress(), smsMessages[i].getMessageBody(), String.valueOf(smsMessages[i].getTimestampMillis()), "0", "1");
                         db.addMessages(messageModel);
 
+                        db.close();
+
                         updateConvThread.putExtra("address", smsMessages[i].getOriginatingAddress());
                         updateConvThread.putExtra("body", smsMessages[i].getMessageBody());
                         updateConvThread.putExtra("timeStamp", String.valueOf(smsMessages[i].getTimestampMillis()));

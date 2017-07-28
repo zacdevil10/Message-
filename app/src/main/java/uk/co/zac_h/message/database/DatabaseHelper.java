@@ -3,6 +3,7 @@ package uk.co.zac_h.message.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -47,6 +48,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void addMessages(MessageModel messageModel) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+
+
         ContentValues values = new ContentValues();
         values.put("id", messageModel.getId());
         values.put("number", messageModel.getNumber());
@@ -70,7 +73,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     //Get messages from SMS_MESSAGES table
-    public List<MessageModel> getAllMessages() {
+    List<MessageModel> getAllMessages() {
         List<MessageModel> messageModelList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
