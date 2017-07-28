@@ -3,6 +3,7 @@ package uk.co.zac_h.message.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -25,7 +26,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         db.beginTransaction();
         try {
-            db.execSQL("CREATE TABLE IF NOT EXISTS SMS_MESSAGES(number TEXT, body TEXT, date TEXT, read TEXT, message_type TEXT)");
+            db.execSQL("CREATE TABLE IF NOT EXISTS SMS_MESSAGES(id TEXT, number TEXT, body TEXT, date TEXT, read TEXT, message_type TEXT)");
             db.execSQL("CREATE TABLE IF NOT EXISTS PROFILE(name TEXT DEFAULT 'Unknown', firstRun INTEGER DEFAULT 0)");
             db.setTransactionSuccessful();
         } finally {
@@ -47,7 +48,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void addMessages(MessageModel messageModel) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+
+
         ContentValues values = new ContentValues();
+        values.put("id", messageModel.getId());
         values.put("number", messageModel.getNumber());
         values.put("body", messageModel.getBody());
         values.put("date", messageModel.getDate());
@@ -69,7 +73,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     //Get messages from SMS_MESSAGES table
-    public List<MessageModel> getAllMessages() {
+    List<MessageModel> getAllMessages() {
         List<MessageModel> messageModelList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -78,7 +82,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         if (cursor.moveToFirst()) {
             do {
                 MessageModel messageModel = new MessageModel();
-                messageModel.setNumber(cursor.getString(cursor.getColumnIndex("number")));
+                messageModel.setId(cursor.getString(cursor.getColumnIndex("id")));
                 messageModel.setBody(cursor.getString(cursor.getColumnIndex("body")));
                 messageModel.setDate(cursor.getString(cursor.getColumnIndex("date")));
                 messageModel.setRead(cursor.getString(cursor.getColumnIndex("read")));
@@ -97,11 +101,12 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         List<MessageModel> messageModelList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES t1 WHERE t1.date = (SELECT MAX(t2.date) FROM SMS_MESSAGES t2 WHERE t2.number=t1.number) ORDER BY date DESC", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES t1 WHERE t1.date = (SELECT MAX(t2.date) FROM SMS_MESSAGES t2 WHERE t2.id=t1.id) OR id='-1' AND t1.date = (SELECT MAX(t2.date) FROM SMS_MESSAGES t2 WHERE t2.number=t1.number) ORDER BY date DESC", null);
 
         if (cursor.moveToFirst()) {
             do {
                 MessageModel messageModel = new MessageModel();
+                messageModel.setId(cursor.getString(cursor.getColumnIndex("id")));
                 messageModel.setNumber(cursor.getString(cursor.getColumnIndex("number")));
                 messageModel.setBody(cursor.getString(cursor.getColumnIndex("body")));
                 messageModel.setDate(cursor.getString(cursor.getColumnIndex("date")));
@@ -113,15 +118,24 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
         cursor.close();
 
+
         return messageModelList;
     }
 
     //Get all messages for a selected number
-    public List<MessageModel> getMessagesForNumber(String number) {
+    public List<MessageModel> getMessagesForNumber(String number, String id) {
         List<MessageModel> messageModelList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES WHERE number='" + number + "'" + "ORDER BY date ASC", null);
+        Cursor cursor;
+
+        if (id.equals("-1")) {
+            cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES WHERE number='" + number + "'" + "ORDER BY date ASC", null);
+        } else {
+            cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES WHERE id='" + id + "'" + "ORDER BY date ASC", null);
+        }
+
+
 
         if (cursor.moveToFirst()) {
             do {
@@ -139,10 +153,26 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return messageModelList;
     }
 
+    //Has id?
+    //Get first run
+    boolean hasID(String number) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT id FROM SMS_MESSAGES WHERE number='" + number + "'", null);
+        cursor.moveToFirst();
+
+        MessageModel messageModel = new MessageModel();
+        messageModel.setId(cursor.getString(cursor.getColumnIndex("id")));
+
+        cursor.close();
+
+        return !messageModel.getId().equals("-1");
+    }
+
     //Mark all messages as read for a number
-    public void setRead(String number) {
+    void setRead(String number) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("UPDATE SMS_MESSAGES SET read='0' WHERE number='" + number + "'");
+        db.execSQL("UPDATE SMS_MESSAGES SET read='1' WHERE number='" + number + "'");
     }
 
     //Get first run

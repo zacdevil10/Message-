@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
+import uk.co.zac_h.message.common.utils.Contact;
 import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
 
@@ -18,7 +20,8 @@ public class SmsListener extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
 
-            Intent intent1 = new Intent("sms.received");
+            Intent updateConvThread = new Intent("sms.received");
+            Intent updateLatestView = new Intent("sms.latest");
 
             DatabaseHelper db = new DatabaseHelper(context);
 
@@ -37,16 +40,27 @@ public class SmsListener extends BroadcastReceiver {
                             smsMessages[i] = SmsMessage.createFromPdu((byte[])pdus[i]);
                         }
 
-                        MessageModel messageModel = new MessageModel(removeStartOfNumber(smsMessages[i].getOriginatingAddress()), smsMessages[i].getMessageBody(), String.valueOf(smsMessages[i].getTimestampMillis()), "0", "1");
+                        String id;
+
+                        if (new Contact(context).getContactIdFromNumber(smsMessages[i].getOriginatingAddress()).equals("")) {
+                            id = "-1";
+                        } else {
+                            id = new Contact(context).getContactIdFromNumber(smsMessages[i].getOriginatingAddress());
+                        }
+
+                        MessageModel messageModel = new MessageModel(id, smsMessages[i].getOriginatingAddress(), smsMessages[i].getMessageBody(), String.valueOf(smsMessages[i].getTimestampMillis()), "0", "1");
                         db.addMessages(messageModel);
 
-                        intent1.putExtra("address", smsMessages[i].getOriginatingAddress());
-                        intent1.putExtra("body", smsMessages[i].getMessageBody());
-                        intent1.putExtra("timeStamp", String.valueOf(smsMessages[i].getTimestampMillis()));
-                        intent1.putExtra("read", "1");
-                        intent1.putExtra("messageType", "1");
+                        db.close();
 
-                        LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(intent1));
+                        updateConvThread.putExtra("address", smsMessages[i].getOriginatingAddress());
+                        updateConvThread.putExtra("body", smsMessages[i].getMessageBody());
+                        updateConvThread.putExtra("timeStamp", String.valueOf(smsMessages[i].getTimestampMillis()));
+                        updateConvThread.putExtra("read", "1");
+                        updateConvThread.putExtra("messageType", "1");
+
+                        LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(updateConvThread));
+                        LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(updateLatestView));
                     }
                 } catch (Exception e) {
                     Log.d("Exception caught", e.getMessage());
@@ -54,19 +68,4 @@ public class SmsListener extends BroadcastReceiver {
             }
         }
     }
-
-    private String removeStartOfNumber(String number) {
-        String cleanNumber = number;
-
-        if (number.startsWith("+")) {
-            cleanNumber = number.substring(3);
-            cleanNumber = cleanNumber.replace(" ", "");
-        } else if (number.startsWith("0")) {
-            cleanNumber = number.substring(1);
-            cleanNumber = cleanNumber.replace(" ", "");
-        }
-
-        return cleanNumber;
-    }
-
 }
