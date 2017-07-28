@@ -16,6 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -27,7 +28,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import uk.co.zac_h.message.MainActivity;
 import uk.co.zac_h.message.R;
+import uk.co.zac_h.message.common.utils.Contact;
 import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsViewAdapter;
 import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
@@ -36,6 +39,7 @@ public class ConversationView extends AppCompatActivity {
 
     String name;
     String number;
+    String id;
 
     DatabaseHelper db;
 
@@ -63,6 +67,7 @@ public class ConversationView extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             name = bundle.getString("name");
+            id = bundle.getString("id");
             number = bundle.getString("number");
         }
 
@@ -80,7 +85,7 @@ public class ConversationView extends AppCompatActivity {
         smsManager = SmsManager.getDefault();
 
         db = new DatabaseHelper(this);
-        List<MessageModel> messageModels = db.getMessagesForNumber(number);
+        List<MessageModel> messageModels = db.getMessagesForNumber(number, id);
         for (MessageModel messageModel: messageModels) {
             body.add(messageModel.getBody());
             read.add(messageModel.getRead());
@@ -127,10 +132,19 @@ public class ConversationView extends AppCompatActivity {
                 System.out.println(convertMessageDate(System.currentTimeMillis()));
 
                 if (!bodyString.equals("")) {
-                    MessageModel messageModel = new MessageModel("7803293099", bodyString, timeString, "1", "2");
+                    //TODO: CHANGE THIS!
+                    String id;
+
+                    if (new Contact(ConversationView.this).getContactIdFromNumber(number).equals("")) {
+                        id = "-1";
+                    } else {
+                        id = new Contact(ConversationView.this).getContactIdFromNumber(number);
+                    }
+
+                    MessageModel messageModel = new MessageModel(id, number, bodyString, timeString, "1", "2");
                     db.addMessages(messageModel);
 
-                    smsManager.sendTextMessage("0" + number, null, bodyString, null, null);
+                    smsManager.sendTextMessage(number, null, bodyString, null, null);
 
                     body.add(bodyString);
                     read.add("1");

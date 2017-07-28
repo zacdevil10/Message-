@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,22 +18,27 @@ import java.util.ArrayList;
 import de.hdodenhof.circleimageview.CircleImageView;
 import uk.co.zac_h.message.R;
 import uk.co.zac_h.message.conversations.ConversationView;
+import uk.co.zac_h.message.database.ReturnData;
 import uk.co.zac_h.message.photos.LetterTitleProvider;
 
 public class ConversationsAdapter extends RecyclerView.Adapter<ConversationsAdapter.ViewHolder> {
 
     private final Context context;
+    private final ArrayList id;
     private final ArrayList number;
     private final ArrayList name;
     private final ArrayList body;
+    private final ArrayList read;
     private final ArrayList type;
     private final ArrayList timeStamp;
 
-    public ConversationsAdapter(Context context, ArrayList number, ArrayList name, ArrayList body, ArrayList type, ArrayList timeStamp) {
+    public ConversationsAdapter(Context context, ArrayList id, ArrayList number, ArrayList name, ArrayList body, ArrayList read, ArrayList type, ArrayList timeStamp) {
         this.context = context;
+        this.id = id;
         this.number = number;
         this.name = name;
         this.body = body;
+        this.read = read;
         this.type = type;
         this.timeStamp = timeStamp;
     }
@@ -44,13 +51,19 @@ public class ConversationsAdapter extends RecyclerView.Adapter<ConversationsAdap
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.name.setText(name.get(position).toString());
 
         if (type.get(position).toString().equals("1")) {
             holder.body.setText(body.get(position).toString());
         } else {
             holder.body.setText("You: " + body.get(position).toString());
+        }
+
+        if (read.get(position).toString().equals("0")) {
+            holder.name.setTextColor(ContextCompat.getColor(context, R.color.colorPrimary));
+            holder.name.setTypeface(null, Typeface.BOLD);
+            holder.body.setTypeface(null, Typeface.BOLD);
         }
 
         holder.timeStamp.setText(timeStamp.get(position).toString());
@@ -67,8 +80,14 @@ public class ConversationsAdapter extends RecyclerView.Adapter<ConversationsAdap
             public void onClick(View v) {
                 Intent intent = new Intent(context, ConversationView.class);
                 intent.putExtra("name", name.get(position).toString());
+                intent.putExtra("id", id.get(position).toString());
                 intent.putExtra("number", number.get(position).toString());
                 context.startActivity(intent);
+                new ReturnData().setRead(context, number.get(position).toString());
+
+                holder.name.setTextColor(ContextCompat.getColor(context, android.R.color.black));
+                holder.name.setTypeface(null, Typeface.NORMAL);
+                holder.body.setTypeface(null, Typeface.NORMAL);
             }
         });
     }
