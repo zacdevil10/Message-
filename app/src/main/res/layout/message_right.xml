@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="136dp"
+    android:layout_marginEnd="8dp"
+    android:id="@+id/wrapper">
+
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="0dp"
+            android:layout_marginStart="144dp"
+            android:background="#FFF"
+            android:minWidth="72dp"
+            app:layout_constraintRight_toRightOf="@id/wrapper"
+            app:layout_constraintBottom_toBottomOf="@id/wrapper"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toTopOf="@id/wrapper"
+            android:layout_marginTop="8dp"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="@id/wrapper"
+            app:layout_constraintHorizontal_bias="0.968">
+
+        <TextView
+            android:id="@+id/message_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="16dp"
+            android:text="This is a test! This is a test! This is a test! This is a test!"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@+id/parent"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintLeft_toLeftOf="@+id/parent"
+            app:layout_constraintRight_toRightOf="@+id/parent"
+            app:layout_constraintTop_toTopOf="@+id/parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.constraint.ConstraintLayout>

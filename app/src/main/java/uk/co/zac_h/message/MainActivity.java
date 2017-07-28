@@ -1,19 +1,14 @@
 package uk.co.zac_h.message;
 
 import android.Manifest;
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.animation.LayoutTransition;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SearchView;
 import android.view.View;
@@ -29,15 +24,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import uk.co.zac_h.message.conversations.ConversationsFragment;
-import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.MessageSync;
 import uk.co.zac_h.message.database.ReturnData;
-import uk.co.zac_h.message.database.databaseModel.ProfileModel;
-import uk.co.zac_h.message.firstRun.FirstRun;
 
 public class MainActivity extends AppCompatActivity {
-
-    private View header;
 
     private ProgressDialog progressDialog;
 
@@ -70,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
         navigationView.getMenu().getItem(0).setChecked(true);
-        header = navigationView.getHeaderView(0);
+        View header = navigationView.getHeaderView(0);
 
         //Change username in header of navigation view
         TextView usernameHeader = (TextView) header.findViewById(R.id.username);

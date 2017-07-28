@@ -53,7 +53,7 @@ public class LetterTitleProvider {
             c.drawText(mFirstChar, 0, 1, width / 2, height / 2 + (mBounds.bottom - mBounds.top) / 2, textPaint);
         } else {
             //TODO: FIX THIS. "IMPORTANT"
-            c.drawBitmap(defaultBitmap, 0, 0, null);
+            //c.drawBitmap(defaultBitmap, 0, 0, null);
         }
 
         return bitmap;

@@ -6,11 +6,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 
+import uk.co.zac_h.message.common.utils.Contact;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
 
 public class MessageSync extends AsyncTask<Void, Void, Void> {
-
-    private DatabaseHelper db;
 
     private final Context context;
     private final ProgressDialog progressDialog;
@@ -29,7 +28,7 @@ public class MessageSync extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         Uri uri = Uri.parse("content://sms");
-        db = new DatabaseHelper(context);
+        DatabaseHelper db = new DatabaseHelper(context);
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
 
         int indexAddress = 0;
@@ -48,18 +47,27 @@ public class MessageSync extends AsyncTask<Void, Void, Void> {
 
         if (indexBody < 0 || cursor != null && !cursor.moveToFirst()) return null;
 
+        String id;
+
         do {
             assert cursor != null;
-            String address = removeStartOfNumber(cursor.getString(indexAddress));
+            if (new Contact(context).getContactIdFromNumber(cursor.getString(indexAddress)).equals("")) {
+                id = "-1";
+            } else {
+                id = new Contact(context).getContactIdFromNumber(cursor.getString(indexAddress));
+            }
+            String number = cursor.getString(indexAddress);
             String body = cursor.getString(indexBody);
             String date = cursor.getString(indexDate);
             String read = cursor.getString(indexRead);
             String person = cursor.getString(indexPerson);
 
-            MessageModel messageModel = new MessageModel(address, body, date, read, person);
+            MessageModel messageModel = new MessageModel(id, number, body, date, read, person);
 
             db.addMessages(messageModel);
         } while (cursor.moveToNext());
+
+        cursor.close();
 
         return null;
     }
@@ -67,19 +75,5 @@ public class MessageSync extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         progressDialog.dismiss();
-    }
-
-    private String removeStartOfNumber(String number) {
-        String cleanNumber = number;
-
-        if (number.startsWith("+")) {
-            cleanNumber = number.substring(3);
-            cleanNumber = cleanNumber.replace(" ", "");
-        } else if (number.startsWith("0")) {
-            cleanNumber = number.substring(1);
-            cleanNumber = cleanNumber.replace(" ", "");
-        }
-
-        return cleanNumber;
     }
 }

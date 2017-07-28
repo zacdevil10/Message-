@@ -31,6 +31,13 @@ public class ReturnData {
         return messageModelList;
     }
 
+    public void setRead(Context context, String number) {
+        db = new DatabaseHelper(context);
+
+        db.setRead(number);
+        db.close();
+    }
+
     public Integer firstRun(Context context) {
         db = new DatabaseHelper(context);
 

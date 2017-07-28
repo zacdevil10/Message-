@@ -23,7 +23,7 @@
         app:layout_constraintLeft_toLeftOf="@+id/item" />
 
     <TextView
-        android:id="@+id/number"
+        android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toRightOf="@+id/image"
@@ -41,7 +41,7 @@
         android:id="@+id/timeStamp"
         android:text="Tues"
         android:textColor="#9e9e9e"
-        app:layout_constraintTop_toTopOf="@+id/number"
+        app:layout_constraintTop_toTopOf="@+id/name"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintRight_toRightOf="@+id/item"
         android:layout_marginEnd="16dp" />
@@ -56,7 +56,7 @@
         android:ellipsize="end"
         android:layout_marginTop="4dp"
         android:textColor="#FF000000"
-        app:layout_constraintTop_toBottomOf="@+id/number"
+        app:layout_constraintTop_toBottomOf="@+id/name"
         app:layout_constraintRight_toRightOf="@+id/item"
         android:layout_marginEnd="72dp"
         android:layout_marginStart="16dp"

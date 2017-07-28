@@ -2,6 +2,7 @@ package uk.co.zac_h.message.database.databaseModel;
 
 public class MessageModel {
 
+    private String id;
     private String number;
     private String body;
     private String date;
@@ -10,12 +11,17 @@ public class MessageModel {
 
     public MessageModel() {}
 
-    public MessageModel(String number, String body, String date, String read, String messageType) {
+    public MessageModel(String id, String number, String body, String date, String read, String messageType) {
+        this.id = id != null? id : this.id;
         this.number = number != null? number : this.number;
         this.body = body != null? body : this.body;
         this.date = date != null? date : this.date;
         this.read = read != null? read : this.read;
         this.messageType = messageType != null? messageType : this.messageType;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getNumber() {
@@ -36,6 +42,10 @@ public class MessageModel {
 
     public String getMessageType() {
         return messageType;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setNumber(String number) {
