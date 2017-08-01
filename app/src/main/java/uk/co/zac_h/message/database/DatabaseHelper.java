@@ -3,7 +3,6 @@ package uk.co.zac_h.message.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -27,6 +26,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.beginTransaction();
         try {
             db.execSQL("CREATE TABLE IF NOT EXISTS SMS_MESSAGES(id TEXT, number TEXT, body TEXT, date TEXT, read TEXT, message_type TEXT)");
+            db.execSQL("CREATE TABLE IF NOT EXISTS LATEST_MESSAGE_CACHE(id TEXT, number TEXT, body TEXT, date TEXT, read TEXT, message_type TEXT)");
             db.execSQL("CREATE TABLE IF NOT EXISTS PROFILE(name TEXT DEFAULT 'Unknown', firstRun INTEGER DEFAULT 0)");
             db.setTransactionSuccessful();
         } finally {
@@ -38,6 +38,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS SMS_MESSAGES");
+        db.execSQL("DROP TABLE IF EXISTS LATEST_MESSAGE_CACHE");
         db.execSQL("DROP TABLE IF EXISTS PROFILE");
         onCreate(db);
     }
@@ -48,8 +49,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void addMessages(MessageModel messageModel) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-
-
         ContentValues values = new ContentValues();
         values.put("id", messageModel.getId());
         values.put("number", messageModel.getNumber());
@@ -59,6 +58,21 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.put("message_type", messageModel.getMessageType());
 
         db.insert("SMS_MESSAGES", null, values);
+        db.close();
+    }
+
+    //Update all users values for ID
+    public void updateID(String id, String number) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE SMS_MESSAGES SET id='" + id + "' WHERE number='" + number + "'");
+        db.close();
+    }
+
+    //If two numbers are the same, use a preferred number
+    public void updateNumber(String numberNew, String numberOld) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE SMS_MESSAGES SET number='" + numberNew + "' WHERE number='" + numberOld + "'");
+        db.close();
     }
 
     //Add profile to PROFILE table
@@ -70,6 +84,28 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.put("firstRun", profileModel.getFirstRun());
 
         db.insert("PROFILE", null, values);
+        db.close();
+    }
+
+    //Get all numbers
+    public List<MessageModel> getAllNumbers() {
+        List<MessageModel> messageModelList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT number FROM SMS_MESSAGES t1 WHERE t1.date = (SELECT MAX(t2.date) FROM SMS_MESSAGES t2 WHERE t2.id=t1.id) OR id='-1' AND t1.date = (SELECT MAX(t2.date) FROM SMS_MESSAGES t2 WHERE t2.number=t1.number) ORDER BY date DESC", null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                MessageModel messageModel = new MessageModel();
+                messageModel.setNumber(cursor.getString(cursor.getColumnIndex("number")));
+                messageModelList.add(messageModel);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return messageModelList;
     }
 
     //Get messages from SMS_MESSAGES table
@@ -92,6 +128,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
 
         cursor.close();
+        db.close();
 
         return messageModelList;
     }
@@ -117,7 +154,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
 
         cursor.close();
-
+        db.close();
 
         return messageModelList;
     }
@@ -135,8 +172,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             cursor = db.rawQuery("SELECT * FROM SMS_MESSAGES WHERE id='" + id + "'" + "ORDER BY date ASC", null);
         }
 
-
-
         if (cursor.moveToFirst()) {
             do {
                 MessageModel messageModel = new MessageModel();
@@ -149,30 +184,34 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
 
         cursor.close();
+        db.close();
 
         return messageModelList;
     }
 
-    //Has id?
-    //Get first run
-    boolean hasID(String number) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT id FROM SMS_MESSAGES WHERE number='" + number + "'", null);
-        cursor.moveToFirst();
-
-        MessageModel messageModel = new MessageModel();
-        messageModel.setId(cursor.getString(cursor.getColumnIndex("id")));
-
-        cursor.close();
-
-        return !messageModel.getId().equals("-1");
-    }
-
     //Mark all messages as read for a number
-    void setRead(String number) {
+    public void setRead(String number) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("UPDATE SMS_MESSAGES SET read='1' WHERE number='" + number + "'");
+        db.close();
+    }
+
+    //LATEST_MESSAGE_CACHE
+
+    //Add messages to LATEST_MESSAGE_CACHE table
+    public void addLatestMessages(MessageModel messageModel) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("id", messageModel.getId());
+        values.put("number", messageModel.getNumber());
+        values.put("body", messageModel.getBody());
+        values.put("date", messageModel.getDate());
+        values.put("read", messageModel.getRead());
+        values.put("message_type", messageModel.getMessageType());
+
+        db.insert("LATEST_MESSAGE_CACHE", null, values);
+        db.close();
     }
 
     //Get first run
@@ -189,14 +228,21 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         firstRun = profileModel.getFirstRun();
 
         cursor.close();
+        db.close();
 
         return firstRun;
     }
 
     //Set firstRun as 1
-    void setFirstRun() {
+     void setFirstRun() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("UPDATE PROFILE SET firstRun='1'");
+
+        ContentValues values = new ContentValues();
+        values.put("name", "Unknown");
+        values.put("firstRun", "1");
+
+        db.insert("PROFILE", null, values);
+        db.close();
     }
 
     //Get count of profile table
@@ -216,6 +262,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
             cursor.close();
         }
+        db.close();
 
         return 0;
     }

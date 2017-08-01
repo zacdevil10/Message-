@@ -9,8 +9,8 @@ import uk.co.zac_h.message.database.databaseModel.MessageModel;
 public class ReturnData {
 
     private DatabaseHelper db;
-    private String number;
-    private String body;
+    private final String number = null;
+    private final String body = null;
     private Integer firstRun;
 
     public String getNumber() {

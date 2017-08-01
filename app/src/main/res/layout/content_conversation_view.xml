@@ -11,62 +11,82 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/conversationRecycler"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="@id/parent"
-        app:layout_constraintBottom_toTopOf="@+id/sendMessage"
-        app:layout_constraintRight_toRightOf="@id/parent"
-        app:layout_constraintLeft_toLeftOf="@id/parent" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintBottom_toBottomOf="@+id/sendMessage"
+        android:paddingBottom="72dp"
+        android:clipToPadding="false"
+        android:clickable="true"/>
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/sendMessage"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:layout_marginLeft="16dp"
         android:background="#FFF"
         android:elevation="8dp"
-        app:layout_constraintRight_toRightOf="@id/parent"
-        app:layout_constraintLeft_toLeftOf="@id/parent"
-        app:layout_constraintBottom_toBottomOf="@id/parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
 
 
         <ImageView
-            android:id="@+id/attach"
+            android:id="@+id/timer"
             android:layout_width="72dp"
-            android:scaleType="center"
             android:layout_height="72dp"
-            app:layout_constraintBottom_toBottomOf="@+id/sendMessage"
-            app:layout_constraintLeft_toLeftOf="@+id/sendMessage"
-            app:layout_constraintTop_toTopOf="@+id/sendMessage"
-            app:srcCompat="@drawable/ic_attach_file_black_24dp"
-            android:background="?attr/selectableItemBackground"/>
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:scaleType="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_timer_purple_24dp" />
 
         <EditText
             android:id="@+id/editText"
             android:layout_width="0dp"
-            android:minHeight="72dp"
             android:layout_height="wrap_content"
-            android:inputType="textCapSentences|textMultiLine"
-            app:layout_constraintBottom_toBottomOf="@+id/sendMessage"
-            app:layout_constraintLeft_toRightOf="@+id/attach"
-            app:layout_constraintTop_toTopOf="@+id/sendMessage"
-            app:layout_constraintVertical_bias="0.517"
-            app:layout_constraintRight_toLeftOf="@+id/send"
+            android:background="#FFF"
             android:hint="Type something..."
+            android:inputType="textCapSentences|textMultiLine"
+            android:minHeight="72dp"
             android:textColor="@color/colorPrimary"
-            android:background="#FFF"/>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/timer"
+            app:layout_constraintRight_toLeftOf="@+id/send"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.517" />
 
         <ImageView
             android:id="@+id/send"
             android:layout_width="72dp"
-            android:scaleType="center"
             android:layout_height="72dp"
-            app:srcCompat="@drawable/ic_send_black_24dp"
-            app:layout_constraintBottom_toBottomOf="@+id/sendMessage"
-            app:layout_constraintTop_toTopOf="@+id/sendMessage"
-            app:layout_constraintRight_toRightOf="@+id/sendMessage"
-            android:background="?attr/selectableItemBackground"/>
+            android:background="?attr/selectableItemBackground"
+            android:scaleType="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_send_black_24dp" />
 
     </android.support.constraint.ConstraintLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        android:id="@+id/showEditText"
+        tools:layout_editor_absoluteX="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:clickable="true"/>
 
 </android.support.constraint.ConstraintLayout>

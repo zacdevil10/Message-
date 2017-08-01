@@ -6,10 +6,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
+import uk.co.zac_h.message.common.LifecycleHandler;
 import uk.co.zac_h.message.common.utils.Contact;
 import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
@@ -20,13 +20,10 @@ public class SmsListener extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
 
-            Intent updateConvThread = new Intent("sms.received");
-            Intent updateLatestView = new Intent("sms.latest");
-
             DatabaseHelper db = new DatabaseHelper(context);
 
             Bundle bundle = intent.getExtras();
-            SmsMessage[] smsMessages = null;
+            SmsMessage[] smsMessages;
             String format = intent.getStringExtra("format");
             if (bundle != null) {
                 try {
@@ -53,14 +50,17 @@ public class SmsListener extends BroadcastReceiver {
 
                         db.close();
 
-                        updateConvThread.putExtra("address", smsMessages[i].getOriginatingAddress());
-                        updateConvThread.putExtra("body", smsMessages[i].getMessageBody());
-                        updateConvThread.putExtra("timeStamp", String.valueOf(smsMessages[i].getTimestampMillis()));
-                        updateConvThread.putExtra("read", "1");
-                        updateConvThread.putExtra("messageType", "1");
+                        if (LifecycleHandler.isApplicationVisible()) {
+                            Intent updateConvThread = new Intent("sms.received");
 
-                        LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(updateConvThread));
-                        LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(updateLatestView));
+                            updateConvThread.putExtra("address", smsMessages[i].getOriginatingAddress());
+                            updateConvThread.putExtra("body", smsMessages[i].getMessageBody());
+                            updateConvThread.putExtra("timeStamp", String.valueOf(smsMessages[i].getTimestampMillis()));
+                            updateConvThread.putExtra("read", "1");
+                            updateConvThread.putExtra("messageType", "1");
+
+                            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(updateConvThread));
+                        }
                     }
                 } catch (Exception e) {
                     Log.d("Exception caught", e.getMessage());

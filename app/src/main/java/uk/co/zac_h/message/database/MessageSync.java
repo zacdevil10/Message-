@@ -6,13 +6,16 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 
-import uk.co.zac_h.message.common.utils.Contact;
+import uk.co.zac_h.message.common.sync.UpdateContactId;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
 
 public class MessageSync extends AsyncTask<Void, Void, Void> {
 
     private final Context context;
     private final ProgressDialog progressDialog;
+
+    private DatabaseHelper db;
+    private Cursor cursor;
 
     public MessageSync(Context context, ProgressDialog progressDialog) {
         this.context = context;
@@ -22,15 +25,15 @@ public class MessageSync extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPreExecute() {
         progressDialog.show();
-        progressDialog.setCancelable(true);
+        progressDialog.setCancelable(false);
+
+        db = new DatabaseHelper(context);
+        Uri uri = Uri.parse("content://sms");
+        cursor = context.getContentResolver().query(uri, null, null, null, null);
     }
 
     @Override
     protected Void doInBackground(Void... params) {
-        Uri uri = Uri.parse("content://sms");
-        DatabaseHelper db = new DatabaseHelper(context);
-        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-
         int indexAddress = 0;
         int indexBody = 0;
         int indexDate = 0;
@@ -47,15 +50,16 @@ public class MessageSync extends AsyncTask<Void, Void, Void> {
 
         if (indexBody < 0 || cursor != null && !cursor.moveToFirst()) return null;
 
+        if (cursor != null) {
+            progressDialog.setMax(cursor.getCount());
+        }
+
         String id;
 
         do {
             assert cursor != null;
-            if (new Contact(context).getContactIdFromNumber(cursor.getString(indexAddress)).equals("")) {
-                id = "-1";
-            } else {
-                id = new Contact(context).getContactIdFromNumber(cursor.getString(indexAddress));
-            }
+
+            id = "-1";
             String number = cursor.getString(indexAddress);
             String body = cursor.getString(indexBody);
             String date = cursor.getString(indexDate);
@@ -65,9 +69,9 @@ public class MessageSync extends AsyncTask<Void, Void, Void> {
             MessageModel messageModel = new MessageModel(id, number, body, date, read, person);
 
             db.addMessages(messageModel);
+            progressDialog.setProgress(cursor.getPosition());
         } while (cursor.moveToNext());
 
-        cursor.close();
 
         return null;
     }
@@ -75,5 +79,9 @@ public class MessageSync extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         progressDialog.dismiss();
+        cursor.close();
+        db.close();
+
+        new UpdateContactId(context).execute();
     }
 }

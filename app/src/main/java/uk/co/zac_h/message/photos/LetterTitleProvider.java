@@ -28,6 +28,7 @@ public class LetterTitleProvider {
     public LetterTitleProvider(Context context) {
         final Resources resources = context.getResources();
 
+        //Set text parameters
         textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
         textPaint.setColor(Color.WHITE);
         textPaint.setTextAlign(Align.CENTER);
@@ -47,12 +48,15 @@ public class LetterTitleProvider {
         c.drawColor(pickColor(key));
 
         if (isEnglishLetterOrDigit(firstChar)) {
+            //If the name starts with a letter or a digit
+            //We can generate an image
             mFirstChar[0] = Character.toUpperCase(firstChar);
             textPaint.setTextSize(tileLetterSize);
             textPaint.getTextBounds(mFirstChar, 0, 1, mBounds);
             c.drawText(mFirstChar, 0, 1, width / 2, height / 2 + (mBounds.bottom - mBounds.top) / 2, textPaint);
         } else {
             //TODO: FIX THIS. "IMPORTANT"
+            //If the name doesn't start with a usable letter, we can use a default image
             //c.drawBitmap(defaultBitmap, 0, 0, null);
         }
 
@@ -64,6 +68,8 @@ public class LetterTitleProvider {
     }
 
     private int pickColor(String key) {
+        //We should always get the same color for each name
+        //This means we don't need to store the info in a database and can call this method any time we want to use the color for that name.
         final int color = Math.abs(key.hashCode()) % NUMBER_OF_COLORS;
         try {
             return colors.getColor(color, Color.BLACK);

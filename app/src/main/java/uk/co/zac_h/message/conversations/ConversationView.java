@@ -6,8 +6,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,20 +20,17 @@ import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
-import uk.co.zac_h.message.MainActivity;
 import uk.co.zac_h.message.R;
+import uk.co.zac_h.message.common.CustomSmsManager;
 import uk.co.zac_h.message.common.utils.Contact;
 import uk.co.zac_h.message.common.utils.Time;
 import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsViewAdapter;
@@ -38,13 +39,11 @@ import uk.co.zac_h.message.database.databaseModel.MessageModel;
 
 public class ConversationView extends AppCompatActivity {
 
-    String name;
-    String number;
-    String id;
+    private String name;
+    private String number;
+    private String thread_id;
 
-    DatabaseHelper db;
-
-    BroadcastReceiver getNewSMS;
+    private DatabaseHelper db;
 
     private final ArrayList<String> body = new ArrayList<>();
     private final ArrayList<String> read = new ArrayList<>();
@@ -54,11 +53,14 @@ public class ConversationView extends AppCompatActivity {
 
     private static final int NUMBER_OF_COLORS = 8;
     private TypedArray colors;
+    //int color;
 
     private SmsManager smsManager;
 
     private ConversationsViewAdapter conversationsViewAdapter;
     private RecyclerView conversationsList;
+
+    ConstraintLayout sendMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,44 +71,33 @@ public class ConversationView extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             name = bundle.getString("name");
-            id = bundle.getString("id");
+            thread_id = bundle.getString("thread_id");
             number = bundle.getString("number");
         }
 
         final Resources resources = getResources();
         colors = resources.obtainTypedArray(R.array.letter_tile_colors);
-        int color = pickColor(name);
+        //int color = pickColor(name);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(name);
-        toolbar.setBackgroundColor(color);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         smsManager = SmsManager.getDefault();
 
-        db = new DatabaseHelper(this);
-        List<MessageModel> messageModels = db.getMessagesForNumber(number, id);
-        for (MessageModel messageModel: messageModels) {
-            body.add(messageModel.getBody());
-            read.add(messageModel.getRead());
-            messageType.add(messageModel.getMessageType());
-            timeStamp.add(new Time().convertMessageDate(Long.valueOf(messageModel.getDate())));
-            animation.add(false);
-        }
-        db.close();
-
         conversationsList = (RecyclerView) findViewById(R.id.conversationRecycler);
         conversationsList.setHasFixedSize(true);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         conversationsList.setLayoutManager(layoutManager);
-        conversationsViewAdapter = new ConversationsViewAdapter(this, body, timeStamp, read, messageType, color, animation);
 
-        conversationsList.setAdapter(conversationsViewAdapter);
+        sendMessage = (ConstraintLayout) findViewById(R.id.sendMessage);
 
-        getNewSMS = new BroadcastReceiver() {
+        new GetFullConv().execute();
+
+        BroadcastReceiver getNewSMS = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String bodyString = intent.getStringExtra("body");
@@ -120,6 +111,9 @@ public class ConversationView extends AppCompatActivity {
                 timeStamp.add(timeStampString);
                 animation.add(true);
 
+                //db.setRead(number);
+                new CustomSmsManager(ConversationView.this, Long.valueOf(thread_id)).markAsRead();
+
                 conversationsViewAdapter.notifyDataSetChanged();
                 conversationsList.scrollToPosition(body.size() - 1);
             }
@@ -131,22 +125,12 @@ public class ConversationView extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                String bodyString = ((EditText) findViewById(R.id.editText)).getText().toString();
-                String timeString = String.valueOf(System.currentTimeMillis() - 3000);
+                final String bodyString = ((EditText) findViewById(R.id.editText)).getText().toString();
+                final String timeString = String.valueOf(System.currentTimeMillis() - 3000);
 
                 if (!bodyString.equals("")) {
-                    Intent updateLatestView = new Intent("sms.latest");
+                    //Intent updateLatestView = new Intent("sms.latest");
                     //TODO: CHANGE THIS!
-                    String id;
-
-                    if (new Contact(ConversationView.this).getContactIdFromNumber(number).equals("")) {
-                        id = "-1";
-                    } else {
-                        id = new Contact(ConversationView.this).getContactIdFromNumber(number);
-                    }
-
-                    MessageModel messageModel = new MessageModel(id, number, bodyString, timeString, "1", "2");
-                    db.addMessages(messageModel);
 
                     smsManager.sendTextMessage(number, null, bodyString, null, null);
 
@@ -161,7 +145,7 @@ public class ConversationView extends AppCompatActivity {
 
                     ((EditText) findViewById(R.id.editText)).setText("");
 
-                    LocalBroadcastManager.getInstance(ConversationView.this).sendBroadcast(new Intent(updateLatestView));
+                    //LocalBroadcastManager.getInstance(ConversationView.this).sendBroadcast(new Intent(updateLatestView));
                 }
             }
         });
@@ -176,6 +160,7 @@ public class ConversationView extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() != 0) {
                     ((ImageView) findViewById(R.id.send)).setImageResource(R.drawable.ic_send_purple_24dp);
+                    conversationsList.setPadding(0, 0, 0, sendMessage.getHeight());
                 } else {
                     ((ImageView) findViewById(R.id.send)).setImageResource(R.drawable.ic_send_black_24dp);
                 }
@@ -186,6 +171,53 @@ public class ConversationView extends AppCompatActivity {
 
             }
         });
+
+        final Animation animationUp = AnimationUtils.loadAnimation(this, R.anim.anim_slide_in_bottom);
+        final Animation animationDown = AnimationUtils.loadAnimation(this, R.anim.anim_slide_down_bottom);
+
+        conversationsList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                int visible = layoutManager.getChildCount();
+                int total = layoutManager.getItemCount();
+                int past = layoutManager.findFirstVisibleItemPosition();
+
+                if (past + visible >= total  && sendMessage.getVisibility() == View.INVISIBLE) {
+                    sendMessage.startAnimation(animationUp);
+                    sendMessage.setVisibility(View.VISIBLE);
+                }
+
+                if (dy < -150 && (!findViewById(R.id.editText).hasFocus() || ((EditText) findViewById(R.id.editText)).length() == 0)&& sendMessage.getVisibility() == View.VISIBLE) {
+                    sendMessage.startAnimation(animationDown);
+                    sendMessage.setVisibility(View.INVISIBLE);
+                } else if (dy > 30 && sendMessage.getVisibility() == View.INVISIBLE){
+                    sendMessage.startAnimation(animationUp);
+                    sendMessage.setVisibility(View.VISIBLE);
+                }
+
+            }
+        });
+
+        findViewById(R.id.showEditText).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (sendMessage.getVisibility() == View.INVISIBLE){
+                    sendMessage.startAnimation(animationUp);
+                    sendMessage.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     private int pickColor(String key) {
@@ -194,6 +226,65 @@ public class ConversationView extends AppCompatActivity {
             return colors.getColor(color, Color.BLACK);
         } finally {
             colors.recycle();
+        }
+    }
+
+    private class GetFullConv extends AsyncTask<Void, Void, Void> {
+
+        private Cursor cursor;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Uri uri = Uri.parse("content://sms/");
+            cursor = getContentResolver().query(uri, null, "thread_id=" + thread_id, null, "date ASC");
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            int indexBody = 0;
+            int indexDate = 0;
+            int indexRead = 0;
+            int indexPerson = 0;
+
+            if (cursor != null) {
+                indexBody = cursor.getColumnIndex("body");
+                indexDate = cursor.getColumnIndex("date");
+                indexRead = cursor.getColumnIndex("read");
+                indexPerson = cursor.getColumnIndex("type");
+            }
+
+            if (indexBody < 0 || cursor != null && !cursor.moveToFirst()) return null;
+
+            do {
+                assert cursor != null;
+                body.add(cursor.getString(indexBody));
+                read.add(cursor.getString(indexRead));
+                messageType.add(cursor.getString(indexPerson));
+                timeStamp.add(new Time().convertMessageDate(Long.valueOf(cursor.getString(indexDate))));
+                animation.add(false);
+            } while (cursor.moveToNext());
+            /*
+            db = new DatabaseHelper(ConversationView.this);
+            List<MessageModel> messageModels = db.getMessagesForNumber(number, id);
+            for (MessageModel messageModel: messageModels) {
+                body.add(messageModel.getBody());
+                read.add(messageModel.getRead());
+                messageType.add(messageModel.getMessageType());
+                timeStamp.add(new Time().convertMessageDate(Long.valueOf(messageModel.getDate())));
+                animation.add(false);
+            }
+            //*/
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            conversationsViewAdapter = new ConversationsViewAdapter(ConversationView.this, body, timeStamp, read, messageType, pickColor(name), animation);
+            conversationsList.setAdapter(conversationsViewAdapter);
+
+            cursor.close();
         }
     }
 

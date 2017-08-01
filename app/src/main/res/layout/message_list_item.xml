@@ -1,39 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="horizontal"
-    android:layout_width="match_parent"
-    android:layout_height="72dp"
-    android:id="@+id/item"
-    android:clickable="true"
-    android:focusable="true"
-    android:background="?android:attr/selectableItemBackground">
+<RelativeLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:orientation="horizontal"
+android:layout_width="match_parent"
+android:layout_height="72dp"
+android:id="@+id/item"
+android:clickable="true"
+android:focusable="true"
+android:background="?android:attr/selectableItemBackground">
 
     <de.hdodenhof.circleimageview.CircleImageView
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/image"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:layout_marginStart="16dp"
         android:layout_centerVertical="true"
-        app:layout_constraintBottom_toBottomOf="@+id/item"
-        app:layout_constraintTop_toTopOf="@+id/item"
-        android:layout_marginStart="8dp"
-        app:layout_constraintLeft_toLeftOf="@+id/item" />
+        app:border_color="#FF000000" />
 
     <TextView
         android:id="@+id/name"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toRightOf="@+id/image"
-        android:text="John Smith"
-        android:textSize="16sp"
-        android:textColor="#FF000000"
-        app:layout_constraintTop_toTopOf="@+id/image"
-        android:layout_marginTop="0dp"
+        android:layout_toEndOf="@id/image"
+        android:layout_alignTop="@+id/image"
         android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginEnd="72dp"
+        android:textSize="16sp"
+        android:text="" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -41,26 +35,21 @@
         android:id="@+id/timeStamp"
         android:text="Tues"
         android:textColor="#9e9e9e"
-        app:layout_constraintTop_toTopOf="@+id/name"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintRight_toRightOf="@+id/item"
-        android:layout_marginEnd="16dp" />
+        android:layout_marginEnd="16dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/name"/>
 
     <TextView
         android:id="@+id/body"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:singleLine="true"
-        android:textSize="14sp"
-        android:text="This is a dummy message! This is a dummy message! This is a dummy message! This is a dummy message! This is a dummy message! This is a dummy message!"
+        android:maxLines="1"
         android:ellipsize="end"
-        android:layout_marginTop="4dp"
-        android:textColor="#FF000000"
-        app:layout_constraintTop_toBottomOf="@+id/name"
-        app:layout_constraintRight_toRightOf="@+id/item"
-        android:layout_marginEnd="72dp"
+        android:layout_toEndOf="@id/image"
+        android:layout_alignBottom="@+id/image"
         android:layout_marginStart="16dp"
-        app:layout_constraintLeft_toRightOf="@+id/image"
-        app:layout_constraintHorizontal_bias="0.1"/>
+        android:layout_marginEnd="72dp"
+        android:textSize="13sp"
+        android:text="" />
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>

@@ -8,7 +8,7 @@ import android.provider.ContactsContract;
 
 public class Contact {
 
-    private Context context;
+    private final Context context;
 
     public Contact(Context context) {
         this.context = context;
@@ -46,8 +46,6 @@ public class Contact {
         if (cursor.moveToFirst()) {
             do {
                 String number = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
-
-                System.out.println(number);
             } while (cursor.moveToNext());
         }
 
@@ -87,8 +85,6 @@ public class Contact {
         if (cursor.moveToFirst()) {
             name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
         }
-
-        System.out.println("We are here! And this is the name:  " + name);
 
         cursor.close();
 

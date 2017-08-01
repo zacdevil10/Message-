@@ -2,12 +2,14 @@ package uk.co.zac_h.message;
 
 import android.Manifest;
 import android.animation.LayoutTransition;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SearchView;
@@ -23,6 +25,7 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import uk.co.zac_h.message.common.LifecycleHandler;
 import uk.co.zac_h.message.conversations.ConversationsFragment;
 import uk.co.zac_h.message.database.MessageSync;
 import uk.co.zac_h.message.database.ReturnData;
@@ -33,8 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final ConversationsFragment conversationsFragment = new ConversationsFragment();
 
-    private static final int READ_SMS_PERM_REQUEST = 1;
-    private static final int READ_CONTACTS_PERM_REQUEST = 2;
+    private static final int GET_PERMS = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +45,14 @@ public class MainActivity extends AppCompatActivity {
 
         //First run, open intro
         //firstRun();
+        if (!Telephony.Sms.getDefaultSmsPackage(this).equals(this.getPackageName())) {
+            Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+            intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, this.getPackageName());
+            startActivity(intent);
+        }
 
-        getSmsPermissions();
-        getContactPerms();
+        getPermissions();
+        //getContactPerms();
 
         //Set the action bar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -54,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -67,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         //TODO: Ask for username input on first opening of app
         usernameHeader.setText("Unknown");
 
-        getSupportFragmentManager().beginTransaction().add(R.id.content_frame, conversationsFragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, conversationsFragment).commit();
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -114,42 +121,25 @@ public class MainActivity extends AppCompatActivity {
         });
 
         progressDialog = new ProgressDialog(this, R.style.LoadingTheme);
-        progressDialog.setIndeterminate(true);
+        progressDialog.setIndeterminate(false);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMessage("Loading messages...");
     }
 
-    public void firstRun() {
-        if (new ReturnData().isProfileEmpty(this) == 0 || new ReturnData().firstRun(this) == 0) {
-            //Intent intent = new Intent(this, FirstRun.class);
-            //startActivity(intent);
-            new MessageSync(this, progressDialog).execute();
-            new ReturnData().setFirstRun(this);
-        } else {
-            System.out.println("Already done first run!");
-        }
+    private void firstRun() {
+        //new MessageSync(this, progressDialog).execute();
+        //new ReturnData().setFirstRun(this);
     }
 
-    public void getSmsPermissions() {
+    private void getPermissions() {
         //Make sure we don't have permissions yet
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) + ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.READ_SMS)) {
 
                 }
                 //If we don't have permission, request permissions
-                requestPermissions(new String[]{Manifest.permission.READ_SMS}, READ_SMS_PERM_REQUEST);
-            }
-        }
-    }
-
-    public void getContactPerms() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
-
-                }
-                //If we don't have permission, request permissions
-                requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, READ_CONTACTS_PERM_REQUEST);
+                requestPermissions(new String[]{Manifest.permission.READ_SMS, Manifest.permission.READ_CONTACTS}, GET_PERMS);
             }
         }
     }
@@ -157,20 +147,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case READ_SMS_PERM_REQUEST:
-                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //If we are given permission, get messages and refresh inbox
-                    //Run first run setup
-                    //firstRun();
-                }
-                return;
-            case READ_CONTACTS_PERM_REQUEST:
-                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            case GET_PERMS:
+                if (grantResults.length > 0 && grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     //If we are given permission, get messages and refresh inbox
                     //Run first run setup
                     firstRun();
                 }
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("fragment", 1);
     }
 
     @Override
