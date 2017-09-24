@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,7 +19,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import uk.co.zac_h.message.R;
 import uk.co.zac_h.message.common.CustomSmsManager;
 import uk.co.zac_h.message.conversations.ConversationView;
-import uk.co.zac_h.message.database.ReturnData;
 import uk.co.zac_h.message.photos.LetterTitleProvider;
 
 public class ConversationsAdapter extends RecyclerView.Adapter<ConversationsAdapter.ViewHolder> {

@@ -33,4 +33,5 @@ dependencies {
     compile 'com.googlecode.libphonenumber:libphonenumber:6.2'
     testCompile 'junit:junit:4.12'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.pushbullet:android-extensions:1.0.4'
 }

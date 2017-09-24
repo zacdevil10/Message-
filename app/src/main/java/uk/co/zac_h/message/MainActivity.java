@@ -2,8 +2,6 @@ package uk.co.zac_h.message;
 
 import android.Manifest;
 import android.animation.LayoutTransition;
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -25,14 +23,9 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import uk.co.zac_h.message.common.LifecycleHandler;
 import uk.co.zac_h.message.conversations.ConversationsFragment;
-import uk.co.zac_h.message.database.MessageSync;
-import uk.co.zac_h.message.database.ReturnData;
 
 public class MainActivity extends AppCompatActivity {
-
-    private ProgressDialog progressDialog;
 
     private final ConversationsFragment conversationsFragment = new ConversationsFragment();
 
@@ -119,16 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-
-        progressDialog = new ProgressDialog(this, R.style.LoadingTheme);
-        progressDialog.setIndeterminate(false);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setMessage("Loading messages...");
-    }
-
-    private void firstRun() {
-        //new MessageSync(this, progressDialog).execute();
-        //new ReturnData().setFirstRun(this);
     }
 
     private void getPermissions() {
@@ -150,8 +133,6 @@ public class MainActivity extends AppCompatActivity {
             case GET_PERMS:
                 if (grantResults.length > 0 && grantResults[0] + grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     //If we are given permission, get messages and refresh inbox
-                    //Run first run setup
-                    firstRun();
                 }
         }
     }

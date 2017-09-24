@@ -1,8 +1,10 @@
 package uk.co.zac_h.message.broadcast;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -10,17 +12,21 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 
 import uk.co.zac_h.message.common.LifecycleHandler;
-import uk.co.zac_h.message.common.utils.Contact;
-import uk.co.zac_h.message.database.DatabaseHelper;
-import uk.co.zac_h.message.database.databaseModel.MessageModel;
+import uk.co.zac_h.message.data.Message;
 
 public class SmsListener extends BroadcastReceiver {
 
+    private Context mContext;
+
+    private String mAddress;
+    private String mBody;
+    private long mDate;
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
-
-            DatabaseHelper db = new DatabaseHelper(context);
+        mContext = context;
+        System.out.println("Just got a message!");
+        if (intent.getExtras() != null) {
 
             Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
@@ -30,27 +36,22 @@ public class SmsListener extends BroadcastReceiver {
                     Object[] pdus = (Object[]) bundle.get("pdus");
                     assert pdus != null;
                     smsMessages = new SmsMessage[pdus.length];
-                    for (int i=0;  i<smsMessages.length; i++) {
+                    for (int i = 0;  i < smsMessages.length; i++) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             smsMessages[i] = SmsMessage.createFromPdu((byte[])pdus[i], format);
                         } else {
                             smsMessages[i] = SmsMessage.createFromPdu((byte[])pdus[i]);
                         }
 
-                        String id;
+                        SmsMessage smsMessage = smsMessages[i];
+                        mBody = smsMessage.getDisplayMessageBody();
+                        mAddress = smsMessage.getDisplayOriginatingAddress();
+                        mDate = smsMessage.getTimestampMillis();
 
-                        if (new Contact(context).getContactIdFromNumber(smsMessages[i].getOriginatingAddress()).equals("")) {
-                            id = "-1";
-                        } else {
-                            id = new Contact(context).getContactIdFromNumber(smsMessages[i].getOriginatingAddress());
-                        }
-
-                        MessageModel messageModel = new MessageModel(id, smsMessages[i].getOriginatingAddress(), smsMessages[i].getMessageBody(), String.valueOf(smsMessages[i].getTimestampMillis()), "0", "1");
-                        db.addMessages(messageModel);
-
-                        db.close();
+                        insertMessage();
 
                         if (LifecycleHandler.isApplicationVisible()) {
+                            System.out.println("Application is alive?");
                             Intent updateConvThread = new Intent("sms.received");
 
                             updateConvThread.putExtra("address", smsMessages[i].getOriginatingAddress());
@@ -67,5 +68,22 @@ public class SmsListener extends BroadcastReceiver {
                 }
             }
         }
+    }
+
+    private void insertMessage() {
+        ContentValues values = new ContentValues();
+
+        values.put("address", mAddress);
+        values.put("body", mBody);
+        values.put("date_sent", mDate);
+
+        Uri uri = mContext.getContentResolver().insert(Uri.parse("content://sms/inbox"), values);
+
+        Message message = new Message(mContext, uri);
+
+        //Intent intent = new Intent(mContext, NotificationService.class);
+
+
+        //message.markSeen();
     }
 }

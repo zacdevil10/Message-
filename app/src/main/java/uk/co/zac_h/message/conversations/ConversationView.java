@@ -27,15 +27,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import uk.co.zac_h.message.R;
 import uk.co.zac_h.message.common.CustomSmsManager;
-import uk.co.zac_h.message.common.utils.Contact;
 import uk.co.zac_h.message.common.utils.Time;
 import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsViewAdapter;
 import uk.co.zac_h.message.database.DatabaseHelper;
-import uk.co.zac_h.message.database.databaseModel.MessageModel;
+import uk.co.zac_h.message.mmssms.Message;
+import uk.co.zac_h.message.mmssms.Transaction;
 
 public class ConversationView extends AppCompatActivity {
 
@@ -111,7 +110,6 @@ public class ConversationView extends AppCompatActivity {
                 timeStamp.add(timeStampString);
                 animation.add(true);
 
-                //db.setRead(number);
                 new CustomSmsManager(ConversationView.this, Long.valueOf(thread_id)).markAsRead();
 
                 conversationsViewAdapter.notifyDataSetChanged();
@@ -129,10 +127,9 @@ public class ConversationView extends AppCompatActivity {
                 final String timeString = String.valueOf(System.currentTimeMillis() - 3000);
 
                 if (!bodyString.equals("")) {
-                    //Intent updateLatestView = new Intent("sms.latest");
-                    //TODO: CHANGE THIS!
 
-                    smsManager.sendTextMessage(number, null, bodyString, null, null);
+                    Message message = new Message(bodyString, number);
+                    new Transaction(ConversationView.this).sendNewMessage(message, Long.valueOf(thread_id));
 
                     body.add(bodyString);
                     read.add("1");
@@ -144,8 +141,6 @@ public class ConversationView extends AppCompatActivity {
                     conversationsList.scrollToPosition(body.size() - 1);
 
                     ((EditText) findViewById(R.id.editText)).setText("");
-
-                    //LocalBroadcastManager.getInstance(ConversationView.this).sendBroadcast(new Intent(updateLatestView));
                 }
             }
         });

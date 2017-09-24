@@ -9,7 +9,6 @@ import java.util.List;
 
 import uk.co.zac_h.message.common.utils.Contact;
 import uk.co.zac_h.message.common.utils.Time;
-import uk.co.zac_h.message.conversations.conversationsadapter.ConversationsAdapter;
 import uk.co.zac_h.message.database.DatabaseHelper;
 import uk.co.zac_h.message.database.databaseModel.MessageModel;
 
