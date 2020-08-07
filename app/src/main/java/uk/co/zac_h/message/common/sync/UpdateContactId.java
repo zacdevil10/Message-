@@ -3,7 +3,7 @@ package uk.co.zac_h.message.common.sync;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.telephony.PhoneNumberUtils;
 
 import java.util.ArrayList;

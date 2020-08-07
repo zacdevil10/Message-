@@ -8,11 +8,11 @@
     tools:context="uk.co.zac_h.message.firstRun.FirstRun"
     tools:showIn="@layout/activity_first_run">
 
-    <android.support.v4.view.ViewPager
+    <androidx.viewpager.widget.ViewPager
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/view_pager">
 
-    </android.support.v4.view.ViewPager>
+    </androidx.viewpager.widget.ViewPager>
 
 </LinearLayout>
